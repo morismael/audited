@@ -64,6 +64,9 @@ module Audited
         after_create :audit_create if !options[:on] || (options[:on] && options[:on].include?(:create))
         before_update :audit_update if !options[:on] || (options[:on] && options[:on].include?(:update))
         before_destroy :audit_destroy if !options[:on] || (options[:on] && options[:on].include?(:destroy))
+        
+        #adding audit on find method (show views)
+        after_find :audit_find if !options[:on] || (options[:on] && options[:on].include?(:find))
 
         # Define and set after_audit and around_audit callbacks. This might be useful if you want
         # to notify a party after the audit has been created or if you want to access the newly-created
@@ -205,6 +208,12 @@ module Audited
 
       def audit_destroy
         write_audit(action: 'destroy', audited_changes: audited_attributes,
+                    comment: audit_comment) unless self.new_record?
+      end
+      
+      #audit find callback
+      def audit_find
+        write_audit(action: 'show', audited_changes: audited_attributes,
                     comment: audit_comment) unless self.new_record?
       end
 
